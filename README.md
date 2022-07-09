@@ -1,7 +1,7 @@
 CONTENT
 =======
 * [RECON](#RECON)
-  * [File Enumeration](##File_Enumeration)
+  * [File Enumeration](##File Enumeration)
   * [Port 21 - FTP](##port_21-FTP)
   * [Port 22 - SSH](##port_22-SSH)
   * [Port 23 - Telnet](##port_23-TELNET)
@@ -41,7 +41,7 @@ nmap -sU 10.10.10.1
 # generate a good scan_report
 nmap -sV IP_ADDRESS -oX scan.xml && xsltproc scan.xml -o "report.html"
 ```
-### File Enumeration
+## File Enumeration
 
 ```bash
 #check file type
