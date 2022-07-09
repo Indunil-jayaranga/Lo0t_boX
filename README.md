@@ -2,13 +2,13 @@ CONTENT
 =======
 * [RECON](#RECON)
   * [File Enumeration](https://github.com/Indunil-jayaranga/Lo0t_boX/blob/master/README.md#file-enumeration)
-  * [Port 21 - FTP](#port-21-ftp)
-  * [Port 22 - SSH](##port_22-SSH)
-  * [Port 23 - Telnet](##port_23-TELNET)
-  * [Port 25 - SMTP](##port_25-SMTP)
-  * [Port 53 - DNS](##port_53-DNS)
-  * [Port 69 - UDP - TFTP](##port_69-UDP-TFTP)
-  * [Port 79 - Finger](##port_79-Finger)
+  * [Port 21 - FTP](#port-21---ftp) 
+  * [Port 22 - SSH](#port-22-SSH)
+  * [Port 23 - Telnet](#port-23-TELNET)
+  * [Port 25 - SMTP](#port-25-SMTP)
+  * [Port 53 - DNS](#port-53---DNS)
+  * [Port 69 - UDP - TFTP](#port-69---UDP---TFTP)
+  * [Port 79 - Finger](#port-79---Finger)
 
 
 # RECON
