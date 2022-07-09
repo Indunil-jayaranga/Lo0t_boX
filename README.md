@@ -2,7 +2,7 @@ CONTENT
 =======
 * [RECON](#RECON)
   * [File Enumeration](https://github.com/Indunil-jayaranga/Lo0t_boX/blob/master/README.md#file-enumeration)
-  * [Port 21 - FTP](##port_21-FTP)
+  * [Port 21 - FTP](#port-21-ftp)
   * [Port 22 - SSH](##port_22-SSH)
   * [Port 23 - Telnet](##port_23-TELNET)
   * [Port 25 - SMTP](##port_25-SMTP)
