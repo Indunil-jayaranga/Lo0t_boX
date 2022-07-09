@@ -2,9 +2,9 @@ CONTENT
 =======
 * [RECON](#RECON)
   * [File Enumeration](##File_Enumeration)
-  * [port 21 - FTP](##port_21-FTP)
+  * [Port 21 - FTP](##port_21-FTP)
   * [Port 22 - SSH](##port_22-SSH)
-  * [ Port 23 - Telnet](##port_23-TELNET)
+  * [Port 23 - Telnet](##port_23-TELNET)
   * [Port 25 - SMTP](##port_25-SMTP)
   * [Port 53 - DNS](##port_53-DNS)
   * [Port 69 - UDP - TFTP](##port_69-UDP-TFTP)
@@ -56,7 +56,7 @@ strings "file.xxx"
 ghex "file.xxx"
 ```
 
-## port 21 - FTP
+## Port 21 - FTP
 
 ```bash
 nmap --script ftp-anon,ftp-bounce,ftp-libopie,ftp-proftpd-backdoor,ftp-vsftpd-backdoor,ftp-vuln-cve2010-4221,tftp-enum -p 21 $IP
@@ -81,7 +81,7 @@ wget -m ftp://anonymous:anonymous@$IP #Donwload all
 
 ```
 
-## port 22 - SSH
+## Port 22 - SSH
 
 
 ```bash
@@ -115,7 +115,7 @@ sudo ssh -L <local_port>:<remote_host>:<remote_port> -N -f <username>@<ip_compro
 
 ```
 
-### Port 23 - Telnet
+## Port 23 - Telnet
 ```bash
 # Banner Grabbing
 nc -vn $IP 23
@@ -125,7 +125,7 @@ nmap -n -sV -Pn --script "*telnet* and safe" -p 23 $IP
 
 ```
 
-### Port 25 - SMTP
+## Port 25 - SMTP
 ```sh
 # Finding MX servers of an organisation
 dig +short mx google.com
@@ -176,7 +176,7 @@ nmap -n -Pn -sU -p69 -sV --script tftp-enum $IP
 msf5> auxiliary/admin/tftp/tftp_transfer_util
 
 ```
-### Port 79 - Finger
+## Port 79 - Finger
 ```bash
 # Enumeration Banner Grabbing
 nc -vn <IP> 79
