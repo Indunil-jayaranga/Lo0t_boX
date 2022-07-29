@@ -189,7 +189,8 @@ finger admin@$IP  #Get user info
 finger user@$IP   #Get user info
 
 # msf
-msf> use auxiliary/scanner/finger/finger_users
+msf> use auxiliary/scanner/finger/finger_users[README.md](https://github.com/Indunil-jayaranga/Lo0t_boX/files/9222613/README.md)
+
 
 ```
 
