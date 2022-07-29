@@ -5,17 +5,17 @@ CONTENT
   * [Port 21 - FTP](#port-21---ftp) 
   * [Port 22 - SSH](#port-22---SSH)
   * [Port 23 - Telnet](#port-23---TELNET)
-  * [Port 25 - SMTP](#port-25-SMTP)
+  * [Port 25 - SMTP](#port-25---SMTP)
   * [Port 53 - DNS](#port-53---DNS)
   * [Port 69 - UDP - TFTP](#port-69---UDP---TFTP)
   * [Port 79 - Finger](#port-79---Finger)
   * [Port 88 - Kerberos](#port-88---kerberos)
   * [Port 110 - POP3](#port-110---pop3)
-  * [Port 995 / 110 -POP](#port-995/110---POP)
+  * [Port 995 / 110 -POP](#port-995-/-110---POP)
   * [Port 111 - Rpcbind](#port-111---Rpcbind)
   * [Port 123 - TNP](#port-123---TNP)
   * [Port 135 - MSRPC](#port-135---MSRPC)
-  * [Port 139/445 - SMB](#port-139/445---SMB)
+  * [Port 139/445 - SMB](#port-139-/-445---SMB)
 
 # RECON
 ```bash
