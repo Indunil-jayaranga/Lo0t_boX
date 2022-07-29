@@ -9,7 +9,13 @@ CONTENT
   * [Port 53 - DNS](#port-53---DNS)
   * [Port 69 - UDP - TFTP](#port-69---UDP---TFTP)
   * [Port 79 - Finger](#port-79---Finger)
-
+  * [Port 88 - Kerberos](#port-88---kerberos)
+  * [Port 110 - POP3](#port-110---pop3)
+  * [Port 995 / 110 -POP](#port-995-110---POP)
+  * [Port 111 - Rpcbind](#port-111---Rpcbind)
+  * [Port 123 - TNP](#port-123---TNP)
+  * [Port 135 - MSRPC](#port-135---MSRPC)
+  * [Port 139/445 - SMB](#port-139-445---smb)
 
 # RECON
 ```bash
