@@ -4,7 +4,7 @@ CONTENT
   * [File Enumeration](#file-enumeration)
   * [Port 21 - FTP](#port-21---ftp) 
   * [Port 22 - SSH](#port-22---SSH)
-  * [Port 23 - Telnet](#port-23-TELNET)
+  * [Port 23 - Telnet](#port-23----TELNET)
   * [Port 25 - SMTP](#port-25-SMTP)
   * [Port 53 - DNS](#port-53---DNS)
   * [Port 69 - UDP - TFTP](#port-69---UDP---TFTP)
