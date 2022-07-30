@@ -15,7 +15,7 @@ CONTENT
   * [Port 111 - Rpcbind](#port-111---Rpcbind)
   * [Port 123 - TNP](#port-123---TNP)
   * [Port 135 - MSRPC](#port-135---MSRPC)
-  * [Port 139,445 - SMB](#port-139,445---SMB)
+  * [Port 139,445 - SMB](#Port-139,445---SMB)
 
 # RECON
 ```bash
